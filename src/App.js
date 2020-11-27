@@ -28,11 +28,23 @@ class Card extends React.Component {
   }
 }
 
+class Form extends React.Component {
+  render(){
+    return (
+      <form action="" className="form">
+        <input type="text" placeholder="GitHub username" />
+        <button>Add User</button>
+      </form>
+    )
+  }
+}
+
 class App extends React.Component {
   render(){
     return (
       <div className="App">
         <div className="title">{this.props.title}</div>
+        <Form />
         <CardList />
       </div>
     );
