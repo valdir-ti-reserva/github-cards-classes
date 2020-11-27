@@ -1,17 +1,31 @@
 import React from 'react';
+import axios from 'axios';
 import './App.css';
 
-const testData = [
-  {name: "Valdir Silva", avatar_url: "https://avatars0.githubusercontent.com/u/11434239?v=4", company: "Avanade"},
-  {name: "Valdir Silva", avatar_url: "https://avatars0.githubusercontent.com/u/11434239?v=4", company: "Avanade"},
-  {name: "Valdir Silva", avatar_url: "https://avatars0.githubusercontent.com/u/11434239?v=4", company: "Avanade"},
-]
+const CardList = (props) => {
+  
+  function getUnique(arr, comp) {
 
-const CardList = (props) => (
-  <div>
-    {props.profiles.map(profile => <Card {...profile}/>)}
-  </div>
-)
+    // store the comparison  values in array
+    const unique =  arr.map(e => e[comp])
+
+    //   store the indexes of the unique objects
+    .map((e, i, final) => final.indexOf(e) === i && i)
+
+    // eliminate the false indexes & return unique objects
+    .filter((e) => arr[e]).map(e => arr[e]);
+
+    return unique;
+  }
+
+  const uniqueProfile = getUnique(props.profiles,'id');
+
+  return (
+    <div>
+      {uniqueProfile.map(profile => <Card key={profile.id} {...profile}/>)}
+    </div>
+  )
+}
 
 class Card extends React.Component {
   render(){
@@ -31,10 +45,13 @@ class Card extends React.Component {
 class Form extends React.Component {
 
   state = { userName: '' }
-
-  handleSubmit = (e) => {
+  
+  handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(this.state.userName)
+    const resp = await axios.get(`https://api.github.com/users/${this.state.userName}`);
+    this.props.onSubmit(resp.data);
+    this.setState({ userName: '' });
+
   }
   render(){
     return (
@@ -58,14 +75,20 @@ class Form extends React.Component {
 class App extends React.Component {
 
   state = {
-    profiles: testData
+    profiles: []
+  }
+
+  addNewProfile = (profileData) => {
+    this.setState(prevState => ({
+      profiles: [...prevState.profiles, profileData]
+    }));
   }
 
   render(){
     return (
       <div className="App">
         <div className="title">{this.props.title}</div>
-        <Form />
+        <Form onSubmit={this.addNewProfile} />
         <CardList profiles={this.state.profiles} />
       </div>
     );
