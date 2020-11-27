@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
@@ -27,73 +27,67 @@ const CardList = (props) => {
   )
 }
 
-class Card extends React.Component {
-  render(){
-    const profile = this.props;
-    return(
-      <div className="github-profile">
-        <img src={profile.avatar_url} alt="Logo"/>
-        <div className="info">
-          <div className="name">{profile.name}</div>
-          <div className="company">{profile.company}</div>
-        </div>
+const Card = (props) => {
+
+  const profile = props;
+  return(
+    <div className="github-profile">
+      <img src={profile.avatar_url} alt="Logo"/>
+      <div className="info">
+        <div className="name">{profile.name}</div>
+        <div className="company">{profile.company}</div>
       </div>
-    );
-  }
-}
-
-class Form extends React.Component {
-
-  state = { userName: '' }
+    </div>
+  );
   
-  handleSubmit = async (e) => {
-    e.preventDefault();
-    const resp = await axios.get(`https://api.github.com/users/${this.state.userName}`);
-    this.props.onSubmit(resp.data);
-    this.setState({ userName: '' });
-
-  }
-  render(){
-    return (
-      <form 
-        onSubmit={this.handleSubmit} 
-        className="form"
-      >
-        <input 
-          type="text" 
-          placeholder="GitHub username"
-          required
-          value={this.state.userName}
-          onChange={e => this.setState({ userName: e.target.value })}
-        />
-        <button>Add User</button>
-      </form>
-    )
-  }
 }
 
-class App extends React.Component {
+const Form = (props) => {
 
-  state = {
-    profiles: []
+  const [userName, setUserName] = useState('');
+  
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const resp = await axios.get(`https://api.github.com/users/${userName}`);    
+    props.onSubmit(resp.data);
+    setUserName('');
+  }
+  
+  return (
+    <form 
+      onSubmit={handleSubmit} 
+      className="form"
+    >
+      <input 
+        type="text" 
+        placeholder="GitHub username"
+        required
+        value={userName}
+        onChange={e => setUserName(e.target.value)}
+      />
+      <button>Add User</button>
+    </form>
+  )
+  
+}
+
+const App = ({title}) => {
+
+  const [profiles, setProfiles] = useState([]);
+
+  const addNewProfile = (profileData) => {
+    const newProfile = [...profiles];
+    newProfile.push(profileData);
+    setProfiles(newProfile);
   }
 
-  addNewProfile = (profileData) => {
-    this.setState(prevState => ({
-      profiles: [...prevState.profiles, profileData]
-    }));
-  }
-
-  render(){
-    return (
-      <div className="App">
-        <div className="title">{this.props.title}</div>
-        <Form onSubmit={this.addNewProfile} />
-        <CardList profiles={this.state.profiles} />
-      </div>
-    );
-  }
-} 
-
+  return (
+    <div className="App">
+      <div className="title">{title}</div>
+      <Form onSubmit={addNewProfile} />
+      <CardList profiles={profiles} />
+    </div>
+  );
+}
 
 export default App;
